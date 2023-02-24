@@ -1,3 +1,4 @@
+import argparse
 import copy
 import json
 import os
@@ -6,21 +7,55 @@ import matplotlib.pyplot as plt
 
 from random import shuffle
 from helpers import load_weights, create_fuzzy_weights
-from tsp import annealing, estimate_average_route_distance, get_distance
+from ftsp import annealing, estimate_average_route_distance, get_approximation_type
 
-# tsp_problem_name = 'rd400'
-# tsp_problem_name = 'rd100'
-tsp_problem_name = 'pr76'
-# tsp_problem_name = "ulysses16"
-# tsp_problem_name = 'gr48'
-data = tsplib95.load(f"problems/{tsp_problem_name}.tsp")
-fuzzy_weights_filename = f"weights/fuzzy-weights-{tsp_problem_name}.json"
-all_routes_filename = f"solutions/all-routes-{tsp_problem_name}.json"
-best_routes_filename = f"solutions/best-routes-{tsp_problem_name}.json"
+available_problems = ["ulysses16", 'gr48', 'pr76', 'rd100', 'rd400']
+
+command_parser = argparse.ArgumentParser(
+    prog='FTSP solution analyser',
+    description= \
+        """This program solves FTSP, considering weights (subjective/objective time, distance, etc.)
+        between cities as fuzzy numbers of one of three available types:
+        crisp, triangular, parabolic. 
+        
+        It builds multiple solutions per one of the fuzzy number types,
+        and then chooses the best one. After that, it performs random
+        evaluations of objective function (sum of estimated weights)
+        and outputs comparison of expected and actual values of objective
+        function, along with graphs depicting found routes if possible.
+        
+        When generating new weights, they are based on well-known TSP, and
+        fuzzy weights are randomly generated using default crisp weights as
+        x values for peak fuzzy values with 5% max divergence to the left
+        and 35% max divergence to the right.""".replace('    ', ' '),
+    epilog='Author: Vadym Rets (vadym.rets@gmail.com)'
+)
+command_parser.add_argument('-p', '--problem', default=available_problems[0], choices=available_problems,
+                            help='Name of the problem to solve (show solution for)')
+command_parser.add_argument('-s', '--solutions', default=30,
+                            help='Amount of solutions to calculate for each fuzzy number type (in the end the best one is selected)')
+command_parser.add_argument('-e', '--evaluations', default=10_000,
+                            help='Amount of random evaluations to do when approximating objective function on selected route')
+command_parser.add_argument('--load-all-routes', action='store_true', default=False,
+                            help='Preload available solutions and evaluate the best one instead of creating new ones')
+command_parser.add_argument('--load-best-route', action='store_true', default=False,
+                            help='Preload the best solutions instead of creating new ones')
+command_parser.add_argument('--ignore-weights', action='store_true', default=False,
+                            help='Ignore existing fuzzy weights and generate new ones for selected problem')
+command_parser.add_argument('--random-initial-route', action='store_true', default=False,
+                            help='Use randomly shuffled initial route instead of a consecutive one')
 
 
-def main(load_all_routes=False, load_best_route=False, ignore_weights=False):
-    if ignore_weights or not os.path.exists(fuzzy_weights_filename):
+def main():
+    args = command_parser.parse_args()
+
+    tsp_problem_name = args.problem
+    data = tsplib95.load(f"problems/{tsp_problem_name}.tsp")
+    fuzzy_weights_filename = f"weights/fuzzy-weights-{tsp_problem_name}.json"
+    all_routes_filename = f"solutions/all-routes-{tsp_problem_name}.json"
+    best_routes_filename = f"solutions/best-routes-{tsp_problem_name}.json"
+
+    if args.ignore_weights or not os.path.exists(fuzzy_weights_filename):
         cities, weights = create_fuzzy_weights(data, tsp_problem_name, (5, 35))
     else:
         weights = load_weights(fuzzy_weights_filename)
@@ -32,24 +67,18 @@ def main(load_all_routes=False, load_best_route=False, ignore_weights=False):
 
     shuffled_cities = copy.deepcopy(cities)
 
-    if load_best_route:
-        with open(f"routes-{tsp_problem_name}.json", "r") as rf:
+    if args.load_best_route:
+        with open(best_routes_filename, "r") as rf:
             routes_by_methods = json.load(rf)
-    elif load_all_routes:
-        with open(f"all-routes-{tsp_problem_name}.json", "r") as rf:
+    elif args.load_all_routes:
+        with open(all_routes_filename, "r") as rf:
             all_routes_by_methods = json.load(rf)
             routes_by_methods = dict()
             for method, routes in all_routes_by_methods.items():
-                if method == "crisp":
-                    apprx_method = "crisp"
-                elif method == "triangular_rank":
-                    apprx_method = "triangular_approximation"
-                else:
-                    apprx_method = "parabolic_approximation"
                 best_result = min(
                     routes,
                     key=lambda r: estimate_average_route_distance(
-                        r, weights, apprx_method
+                        r, weights, get_approximation_type(method)
                     ),
                 )
                 routes_by_methods[method] = best_result
@@ -61,20 +90,15 @@ def main(load_all_routes=False, load_best_route=False, ignore_weights=False):
         for method in methods:
             routes = []
             for it in range(iterations):
-                # shuffle(shuffled_cities)
+                if args.random_initial_route:
+                    shuffle(shuffled_cities)
                 print(f"{method=}, it: {it + 1}/{iterations}")
                 routes.append(annealing(shuffled_cities, weights, method))
 
-            if method == "crisp":
-                apprx_method = "crisp"
-            elif method == "triangular_rank":
-                apprx_method = "triangular_approximation"
-            else:
-                apprx_method = "parabolic_approximation"
             all_routes[method] = routes
             best_result = min(
                 routes,
-                key=lambda r: estimate_average_route_distance(r, weights, apprx_method),
+                key=lambda r: estimate_average_route_distance(r, weights, get_approximation_type(method)),
             )
             methods_results[method] = best_result
 
@@ -87,6 +111,7 @@ def main(load_all_routes=False, load_best_route=False, ignore_weights=False):
         routes_by_methods = methods_results
 
     fig, axs = plt.subplots(2, 2)
+    fig.canvas.manager.set_window_title('FTSP Solutions')
 
     for ax in axs.flat:
         ax.set(xlabel="x-label", ylabel="y-label")
@@ -95,16 +120,17 @@ def main(load_all_routes=False, load_best_route=False, ignore_weights=False):
         ax.label_outer()
     colors = ["blue", "orange", "red"]
     plot_coords = [(0, 0), (0, 1), (1, 0)]
-    sampling_size = 100_000
     for idx, (method, route) in enumerate(routes_by_methods.items()):
         crisp_sampling = estimate_average_route_distance(
-            route, weights, "crisp", sampling_size
+            route, weights, "crisp", args.evaluations
         )
         realistic_sampling = estimate_average_route_distance(
-            route, weights, "parabolic_approximation", sampling_size
+            route, weights, "parabolic_approximation", args.evaluations
         )
 
-        print(f"For {method=} {crisp_sampling=}, {realistic_sampling=}")
+        print(f"For fuzzy type '{method}':")
+        print(f"Naive objective function value = {crisp_sampling}")
+        print(f"Realistic objective function value = {realistic_sampling}", end="\n\n")
 
         if data.node_coords == {}:
             continue
@@ -116,10 +142,10 @@ def main(load_all_routes=False, load_best_route=False, ignore_weights=False):
             xs[1:-2], ys[1:-2], color="grey"
         )
         axs[plot_coords[idx][0], plot_coords[idx][1]].scatter(
-            xs[-2], ys[-2], s=120, color="green"
+            xs[0], ys[0], s=120, color="green"
         )
         axs[plot_coords[idx][0], plot_coords[idx][1]].scatter(
-            xs[-1], ys[-1], s=120, color="red"
+            xs[-2], ys[-2], s=120, color="red"
         )
         axs[plot_coords[idx][0], plot_coords[idx][1]].set_title(method)
 
@@ -135,4 +161,5 @@ def main(load_all_routes=False, load_best_route=False, ignore_weights=False):
     plt.show()
 
 
-main(load_all_routes=False, load_best_route=False, ignore_weights=False)
+if __name__ == "__main__":
+    main()

@@ -2,9 +2,7 @@ from random import randint
 from typing import List, Optional, Tuple
 import json
 
-Route = List[int]
-FuzzyNumber = List[float]
-Weights = List[List[Optional[FuzzyNumber]]]
+from ftsp import Weights
 
 
 def get_weights_from_data(data):
@@ -29,9 +27,9 @@ def load_weights(weights_filename: str) -> Weights:
 
 
 def generate_fuzzy_weights(
-    cities: List[int],
-    deviation: Tuple[int, int],
-    crisp_weights,
+        cities: List[int],
+        deviation: Tuple[int, int],
+        crisp_weights,
 ) -> Tuple[Weights, Weights]:
     fuzzy_weights: Weights = [[None] * len(cities) for _ in range(max(cities))]
     fuzzy_crisp_weights: Weights = [[None] * len(cities) for _ in range(max(cities))]

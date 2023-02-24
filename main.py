@@ -9,12 +9,11 @@ from random import shuffle
 from helpers import load_weights, create_fuzzy_weights
 from ftsp import annealing, estimate_average_route_distance, get_approximation_type
 
-available_problems = ["ulysses16", 'gr48', 'pr76', 'rd100', 'rd400']
+available_problems = ["ulysses16", "gr48", "pr76", "rd100", "rd400"]
 
 command_parser = argparse.ArgumentParser(
-    prog='FTSP solution analyser',
-    description= \
-        """This program solves FTSP, considering weights (subjective/objective time, distance, etc.)
+    prog="FTSP solution analyser",
+    description="""This program solves FTSP, considering weights (subjective/objective time, distance, etc.)
         between cities as fuzzy numbers of one of three available types:
         crisp, triangular, parabolic. 
         
@@ -27,26 +26,57 @@ command_parser = argparse.ArgumentParser(
         When generating new weights, they are based on well-known TSP, and
         fuzzy weights are randomly generated using default crisp weights as
         x values for peak fuzzy values with 5% max divergence to the left
-        and 35% max divergence to the right.""".replace('    ', ' '),
-    epilog='Author: Vadym Rets (vadym.rets@gmail.com)'
+        and 35% max divergence to the right.""".replace(
+        "    ", " "
+    ),
+    epilog="Author: Vadym Rets (vadym.rets@gmail.com)",
 )
-command_parser.add_argument('-p', '--problem', default=available_problems[0], choices=available_problems,
-                            help='Name of the problem to solve (show solution for)')
-command_parser.add_argument('-s', '--solutions', default=30,
-                            help='Amount of solutions to calculate for each fuzzy number type (in the end the best one is selected)')
-command_parser.add_argument('-e', '--evaluations', default=10_000,
-                            help='Amount of random evaluations to do when approximating objective function on selected route')
-command_parser.add_argument('--load-all-routes', action='store_true', default=False,
-                            help='Preload available solutions and evaluate the best one instead of creating new ones')
-command_parser.add_argument('--load-best-route', action='store_true', default=False,
-                            help='Preload the best solutions instead of creating new ones')
-command_parser.add_argument('--ignore-weights', action='store_true', default=False,
-                            help='Ignore existing fuzzy weights and generate new ones for selected problem')
-command_parser.add_argument('--random-initial-route', action='store_true', default=False,
-                            help='Use randomly shuffled initial route instead of a consecutive one')
+command_parser.add_argument(
+    "-p",
+    "--problem",
+    default=available_problems[0],
+    choices=available_problems,
+    help="Name of the problem to solve (show solution for)",
+)
+command_parser.add_argument(
+    "-s",
+    "--solutions",
+    default=30,
+    help="Amount of solutions to calculate for each fuzzy number type (in the end the best one is selected)",
+)
+command_parser.add_argument(
+    "-e",
+    "--evaluations",
+    default=10_000,
+    help="Amount of random evaluations to do when approximating objective function on selected route",
+)
+command_parser.add_argument(
+    "--load-all-routes",
+    action="store_true",
+    default=False,
+    help="Preload available solutions and evaluate the best one instead of creating new ones",
+)
+command_parser.add_argument(
+    "--load-best-route",
+    action="store_true",
+    default=False,
+    help="Preload the best solutions instead of creating new ones",
+)
+command_parser.add_argument(
+    "--ignore-weights",
+    action="store_true",
+    default=False,
+    help="Ignore existing fuzzy weights and generate new ones for selected problem",
+)
+command_parser.add_argument(
+    "--random-initial-route",
+    action="store_true",
+    default=False,
+    help="Use randomly shuffled initial route instead of a consecutive one",
+)
 
 
-def main():
+def main() -> None:
     args = command_parser.parse_args()
 
     tsp_problem_name = args.problem
@@ -98,7 +128,9 @@ def main():
             all_routes[method] = routes
             best_result = min(
                 routes,
-                key=lambda r: estimate_average_route_distance(r, weights, get_approximation_type(method)),
+                key=lambda r: estimate_average_route_distance(
+                    r, weights, get_approximation_type(method)
+                ),
             )
             methods_results[method] = best_result
 
@@ -111,7 +143,7 @@ def main():
         routes_by_methods = methods_results
 
     fig, axs = plt.subplots(2, 2)
-    fig.canvas.manager.set_window_title('FTSP Solutions')
+    fig.canvas.manager.set_window_title("FTSP Solutions")
 
     for ax in axs.flat:
         ax.set(xlabel="x-label", ylabel="y-label")

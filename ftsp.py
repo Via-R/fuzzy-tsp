@@ -7,6 +7,7 @@ from typing import List, Optional
 
 Route = List[int]
 FuzzyNumber = List[float]
+CrispWeights = List[List[Optional[float]]]
 Weights = List[List[Optional[FuzzyNumber]]]
 
 approximation_types = {
@@ -32,62 +33,62 @@ def right_triangular_rank(a: float, b: float, c: float) -> float:
 # Methods for BOA method of PFNs
 def left_parabolic_rank(a: float, b: float, c: float) -> float:
     x = (
-            -(
-                    (1 + 1j * sqrt(3))
-                    * (
-                            -27 * a ** 3
-                            + 108 * a ** 2 * b
-                            - 27 * a ** 2 * c
-                            + sqrt(
-                        4 * (-9 * a ** 2 + 18 * a * b - 9 * b ** 2) ** 3
-                        + (
-                                -27 * a ** 3
-                                + 108 * a ** 2 * b
-                                - 27 * a ** 2 * c
-                                - 135 * a * b ** 2
-                                + 54 * a * b * c
-                                + 54 * b ** 3
-                                - 27 * b ** 2 * c
-                        )
-                        ** 2
+        -(
+            (1 + 1j * sqrt(3))
+            * (
+                -27 * a**3
+                + 108 * a**2 * b
+                - 27 * a**2 * c
+                + sqrt(
+                    4 * (-9 * a**2 + 18 * a * b - 9 * b**2) ** 3
+                    + (
+                        -27 * a**3
+                        + 108 * a**2 * b
+                        - 27 * a**2 * c
+                        - 135 * a * b**2
+                        + 54 * a * b * c
+                        + 54 * b**3
+                        - 27 * b**2 * c
                     )
-                            - 135 * a * b ** 2
-                            + 54 * a * b * c
-                            + 54 * b ** 3
-                            - 27 * b ** 2 * c
-                    )
-                    ** (1 / 3)
+                    ** 2
+                )
+                - 135 * a * b**2
+                + 54 * a * b * c
+                + 54 * b**3
+                - 27 * b**2 * c
             )
-            / (6 * 2 ** (1 / 3))
-            + ((1 - 1j * sqrt(3)) * (-9 * a ** 2 + 18 * a * b - 9 * b ** 2))
-            / (
-                    3
-                    * 2 ** (2 / 3)
-                    * (
-                            -27 * a ** 3
-                            + 108 * a ** 2 * b
-                            - 27 * a ** 2 * c
-                            + sqrt(
-                        4 * (-9 * a ** 2 + 18 * a * b - 9 * b ** 2) ** 3
-                        + (
-                                -27 * a ** 3
-                                + 108 * a ** 2 * b
-                                - 27 * a ** 2 * c
-                                - 135 * a * b ** 2
-                                + 54 * a * b * c
-                                + 54 * b ** 3
-                                - 27 * b ** 2 * c
-                        )
-                        ** 2
+            ** (1 / 3)
+        )
+        / (6 * 2 ** (1 / 3))
+        + ((1 - 1j * sqrt(3)) * (-9 * a**2 + 18 * a * b - 9 * b**2))
+        / (
+            3
+            * 2 ** (2 / 3)
+            * (
+                -27 * a**3
+                + 108 * a**2 * b
+                - 27 * a**2 * c
+                + sqrt(
+                    4 * (-9 * a**2 + 18 * a * b - 9 * b**2) ** 3
+                    + (
+                        -27 * a**3
+                        + 108 * a**2 * b
+                        - 27 * a**2 * c
+                        - 135 * a * b**2
+                        + 54 * a * b * c
+                        + 54 * b**3
+                        - 27 * b**2 * c
                     )
-                            - 135 * a * b ** 2
-                            + 54 * a * b * c
-                            + 54 * b ** 3
-                            - 27 * b ** 2 * c
-                    )
-                    ** (1 / 3)
+                    ** 2
+                )
+                - 135 * a * b**2
+                + 54 * a * b * c
+                + 54 * b**3
+                - 27 * b**2 * c
             )
-            + b
+            ** (1 / 3)
+        )
+        + b
     )
 
     if x.imag > 1e-10:
@@ -98,62 +99,62 @@ def left_parabolic_rank(a: float, b: float, c: float) -> float:
 
 def right_parabolic_rank(a: float, b: float, c: float) -> float:
     x = (
-            -(
-                    (1 + 1j * sqrt(3))
-                    * (
-                            -27 * a * b ** 2
-                            + sqrt(
-                        (
-                                -27 * a * b ** 2
-                                + 54 * a * b * c
-                                - 27 * a * c ** 2
-                                + 54 * b ** 3
-                                - 135 * b ** 2 * c
-                                + 108 * b * c ** 2
-                                - 27 * c ** 3
-                        )
-                        ** 2
-                        + 4 * (-9 * b ** 2 + 18 * b * c - 9 * c ** 2) ** 3
+        -(
+            (1 + 1j * sqrt(3))
+            * (
+                -27 * a * b**2
+                + sqrt(
+                    (
+                        -27 * a * b**2
+                        + 54 * a * b * c
+                        - 27 * a * c**2
+                        + 54 * b**3
+                        - 135 * b**2 * c
+                        + 108 * b * c**2
+                        - 27 * c**3
                     )
-                            + 54 * a * b * c
-                            - 27 * a * c ** 2
-                            + 54 * b ** 3
-                            - 135 * b ** 2 * c
-                            + 108 * b * c ** 2
-                            - 27 * c ** 3
-                    )
-                    ** (1 / 3)
+                    ** 2
+                    + 4 * (-9 * b**2 + 18 * b * c - 9 * c**2) ** 3
+                )
+                + 54 * a * b * c
+                - 27 * a * c**2
+                + 54 * b**3
+                - 135 * b**2 * c
+                + 108 * b * c**2
+                - 27 * c**3
             )
-            / (6 * 2 ** (1 / 3))
-            + ((1 - 1j * sqrt(3)) * (-9 * b ** 2 + 18 * b * c - 9 * c ** 2))
-            / (
-                    3
-                    * 2 ** (2 / 3)
-                    * (
-                            -27 * a * b ** 2
-                            + sqrt(
-                        (
-                                -27 * a * b ** 2
-                                + 54 * a * b * c
-                                - 27 * a * c ** 2
-                                + 54 * b ** 3
-                                - 135 * b ** 2 * c
-                                + 108 * b * c ** 2
-                                - 27 * c ** 3
-                        )
-                        ** 2
-                        + 4 * (-9 * b ** 2 + 18 * b * c - 9 * c ** 2) ** 3
+            ** (1 / 3)
+        )
+        / (6 * 2 ** (1 / 3))
+        + ((1 - 1j * sqrt(3)) * (-9 * b**2 + 18 * b * c - 9 * c**2))
+        / (
+            3
+            * 2 ** (2 / 3)
+            * (
+                -27 * a * b**2
+                + sqrt(
+                    (
+                        -27 * a * b**2
+                        + 54 * a * b * c
+                        - 27 * a * c**2
+                        + 54 * b**3
+                        - 135 * b**2 * c
+                        + 108 * b * c**2
+                        - 27 * c**3
                     )
-                            + 54 * a * b * c
-                            - 27 * a * c ** 2
-                            + 54 * b ** 3
-                            - 135 * b ** 2 * c
-                            + 108 * b * c ** 2
-                            - 27 * c ** 3
-                    )
-                    ** (1 / 3)
+                    ** 2
+                    + 4 * (-9 * b**2 + 18 * b * c - 9 * c**2) ** 3
+                )
+                + 54 * a * b * c
+                - 27 * a * c**2
+                + 54 * b**3
+                - 135 * b**2 * c
+                + 108 * b * c**2
+                - 27 * c**3
             )
-            + b
+            ** (1 / 3)
+        )
+        + b
     )
 
     if x.imag > 1e-10:
@@ -228,10 +229,10 @@ def fuzzy_sum(a: FuzzyNumber, b: FuzzyNumber) -> FuzzyNumber:
 
 
 def get_cost(
-        route: Route,
-        weights: Weights,
-        weight_approximation: str,
-        partial_approximation=True,
+    route: Route,
+    weights: Weights,
+    weight_approximation: str,
+    partial_approximation=True,
 ) -> float:
     """Calculate fitness for the route by given weight approximation method."""
 
@@ -262,10 +263,10 @@ def get_cost(
 
 
 def get_distance(
-        route: Route,
-        weights: Weights,
-        weight_approximation: str,
-        partial_approximation=False,
+    route: Route,
+    weights: Weights,
+    weight_approximation: str,
+    partial_approximation=False,
 ) -> float:
     """Get distance by given weight approximation method."""
 
@@ -277,9 +278,9 @@ def inverse(route: Route) -> Route:
 
     city_a = random.choice(route)
     city_b = random.choice([city for city in route if city != city_a])
-    route[min(city_a, city_b): max(city_a, city_b)] = route[
-                                                      min(city_a, city_b): max(city_a, city_b)
-                                                      ][::-1]
+    route[min(city_a, city_b) : max(city_a, city_b)] = route[
+        min(city_a, city_b) : max(city_a, city_b)
+    ][::-1]
 
     return route
 
@@ -312,8 +313,8 @@ def swap_routes(route: Route) -> Route:
 
     city_a = random.choice(route)
     city_b = random.choice([city for city in route if city != city_a])
-    subroute = route[min(city_a, city_b): max(city_a, city_b)]
-    del route[min(city_a, city_b): max(city_a, city_b)]
+    subroute = route[min(city_a, city_b) : max(city_a, city_b)]
+    del route[min(city_a, city_b) : max(city_a, city_b)]
 
     insert_position = random.choice(range(len(route)))
     route = route[:insert_position] + subroute + route[insert_position:]
@@ -330,7 +331,7 @@ def get_neighboring_route(route: Route) -> Route:
 
 
 def annealing(
-        initial_state: Route, weights: Weights, weight_approximation="precise"
+    initial_state: Route, weights: Weights, weight_approximation="precise"
 ) -> Route:
     """Perform simulated annealing to find a solution."""
 
@@ -382,14 +383,14 @@ def annealing(
 
 
 def estimate_average_route_distance(
-        route: Route, weights, method: str, sampling_size: int = 100_000
+    route: Route, weights, method: str, sampling_size: int = 100_000
 ):
     return (
-            sum(
-                [
-                    get_distance(route, weights, method, partial_approximation=False)
-                    for _ in range(sampling_size)
-                ]
-            )
-            / sampling_size
+        sum(
+            [
+                get_distance(route, weights, method, partial_approximation=False)
+                for _ in range(sampling_size)
+            ]
+        )
+        / sampling_size
     )

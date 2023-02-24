@@ -2,10 +2,10 @@ from random import randint
 from typing import List, Optional, Tuple
 import json
 
-from ftsp import Weights
+from ftsp import Weights, CrispWeights
 
 
-def get_weights_from_data(data):
+def get_weights_from_data(data) -> Weights:
     cities = list(data.get_nodes())
     weights = [[None] * len(cities) for _ in range(len(cities))]
 
@@ -16,7 +16,7 @@ def get_weights_from_data(data):
     return weights
 
 
-def save_weights(weights, weights_filename: str) -> None:
+def save_weights(weights: Weights, weights_filename: str) -> None:
     with open(weights_filename, "w") as f:
         json.dump(weights, f, indent=4)
 
@@ -27,9 +27,9 @@ def load_weights(weights_filename: str) -> Weights:
 
 
 def generate_fuzzy_weights(
-        cities: List[int],
-        deviation: Tuple[int, int],
-        crisp_weights,
+    cities: List[int],
+    deviation: Tuple[int, int],
+    crisp_weights: CrispWeights,
 ) -> Tuple[Weights, Weights]:
     fuzzy_weights: Weights = [[None] * len(cities) for _ in range(max(cities))]
     fuzzy_crisp_weights: Weights = [[None] * len(cities) for _ in range(max(cities))]
@@ -55,7 +55,7 @@ def generate_fuzzy_weights(
     return fuzzy_weights, fuzzy_crisp_weights
 
 
-def create_fuzzy_weights(data, problem_name, deviation: Tuple[int, int]):
+def create_fuzzy_weights(data, problem_name: str, deviation: Tuple[int, int]):
     cities = list(data.get_nodes())
     min_city = min(cities)
     cities = [city - min_city + 1 for city in cities]

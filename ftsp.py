@@ -1,9 +1,8 @@
 import random
 import math
-import time
 import copy
 from cmath import sqrt
-from typing import List, Optional, Union
+from typing import List, Optional
 
 Route = List[int]
 FuzzyNumber = List[float]
@@ -229,7 +228,7 @@ def parabolic_approximation(f: FuzzyNumber) -> float:
             return rand_x
 
 
-defuzzification_methods = {
+DEFUZZIFICATION_METHODS = {
     "crisp": {"approximation": crisp_rank, "rank": crisp_rank},
     "triangular": {
         "approximation": triangular_approximation,
@@ -240,13 +239,13 @@ defuzzification_methods = {
 DEFAULT_FUZZINESS_TYPE = "parabolic"
 
 
-def get_defuzzification_method(fuzziness_type: str, defuzzification_type: str):
+def _get_defuzzification_method(fuzziness_type: str, defuzzification_type: str):
     if defuzzification_type not in ["rank", "approximation"]:
         raise Exception("Wrong defuzzification method name")
 
     return (
-        defuzzification_methods.get(fuzziness_type)
-        or defuzzification_methods[DEFAULT_FUZZINESS_TYPE]
+        DEFUZZIFICATION_METHODS.get(fuzziness_type)
+        or DEFUZZIFICATION_METHODS[DEFAULT_FUZZINESS_TYPE]
     )[defuzzification_type]
 
 
@@ -260,7 +259,7 @@ def approximate_fuzzy_number(
     if a == b and b == c:
         return b
 
-    return get_defuzzification_method(fuzziness_type, defuzzification_type)(
+    return _get_defuzzification_method(fuzziness_type, defuzzification_type)(
         fuzzy_number
     )
 
@@ -322,7 +321,7 @@ def get_distance(
     )
 
 
-def inverse(route: Route) -> Route:
+def _inverse(route: Route) -> Route:
     """Inverse the order of cities in a route between city a and city b."""
 
     city_a = random.choice(route)
@@ -334,7 +333,7 @@ def inverse(route: Route) -> Route:
     return route
 
 
-def insert(route: Route) -> Route:
+def _insert(route: Route) -> Route:
     """Move city a before city b."""
 
     city_a = random.choice(route)
@@ -346,7 +345,7 @@ def insert(route: Route) -> Route:
     return route
 
 
-def swap_cities(route: Route) -> Route:
+def _swap_cities(route: Route) -> Route:
     """Swap cities at positions i and j."""
 
     city_a = random.choice(route)
@@ -357,7 +356,7 @@ def swap_cities(route: Route) -> Route:
     return route
 
 
-def swap_routes(route: Route) -> Route:
+def _swap_routes(route: Route) -> Route:
     """Select a subroute from city a to city b and insert it at another position in the route."""
 
     city_a = random.choice(route)
@@ -371,12 +370,12 @@ def swap_routes(route: Route) -> Route:
     return route
 
 
-def get_neighboring_route(route: Route) -> Route:
+def _get_neighboring_route(route: Route) -> Route:
     """Return neighbor of given solution."""
 
     neighbor = copy.deepcopy(route)
 
-    return random.choice([inverse, insert, swap_cities, swap_routes])(neighbor)
+    return random.choice([_inverse, _insert, _swap_cities, _swap_routes])(neighbor)
 
 
 def annealing(
@@ -387,7 +386,6 @@ def annealing(
 ) -> Route:
     """Perform simulated annealing to find a solution."""
 
-    start = time.time()
     initial_temp: float = 5000.0
     alpha = 0.99
     current_temp = initial_temp
@@ -396,7 +394,7 @@ def annealing(
     same_cost_diff = 0
 
     while same_solution < 1500 and same_cost_diff < 50000:  # originally 150k
-        neighbor = get_neighboring_route(solution)
+        neighbor = _get_neighboring_route(solution)
 
         cost_diff = get_cost(
             neighbor, weights, fuzziness_type, defuzzification_type
@@ -425,8 +423,6 @@ def annealing(
                 same_cost_diff += 1
 
         current_temp = current_temp * alpha
-
-    print(f"{fuzziness_type=}, {time.time() - start:.4f}s")
 
     return solution
 

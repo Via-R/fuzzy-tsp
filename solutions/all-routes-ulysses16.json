@@ -271,7 +271,7 @@
             2
         ]
     ],
-    "triangular_rank": [
+    "triangular": [
         [
             12,
             13,
@@ -543,7 +543,7 @@
             2
         ]
     ],
-    "parabolic_rank": [
+    "parabolic": [
         [
             10,
             9,

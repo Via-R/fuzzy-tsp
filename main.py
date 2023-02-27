@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 
 from random import shuffle
 from helpers import load_weights, create_fuzzy_weights
-from ftsp import annealing, estimate_average_route_distance, get_approximation_type
+from ftsp import annealing, estimate_average_route_distance
 
 available_problems = ["ulysses16", "gr48", "pr76", "rd100", "rd400"]
 
@@ -42,12 +42,14 @@ command_parser.add_argument(
     "-s",
     "--solutions",
     default=30,
+    type=int,
     help="Amount of solutions to calculate for each fuzzy number type (in the end the best one is selected)",
 )
 command_parser.add_argument(
     "-e",
     "--evaluations",
-    default=10_000,
+    default=100_000,
+    type=int,
     help="Amount of random evaluations to do when approximating objective function on selected route",
 )
 command_parser.add_argument(
@@ -99,40 +101,42 @@ def main() -> None:
 
     if args.load_best_route:
         with open(best_routes_filename, "r") as rf:
-            routes_by_methods = json.load(rf)
+            routes_by_fuzziness_types = json.load(rf)
     elif args.load_all_routes:
         with open(all_routes_filename, "r") as rf:
             all_routes_by_methods = json.load(rf)
-            routes_by_methods = dict()
-            for method, routes in all_routes_by_methods.items():
+            routes_by_fuzziness_types = dict()
+            for fuzziness_type, routes in all_routes_by_methods.items():
                 best_result = min(
                     routes,
                     key=lambda r: estimate_average_route_distance(
-                        r, weights, get_approximation_type(method)
+                        r, weights, fuzziness_type
                     ),
                 )
-                routes_by_methods[method] = best_result
+                routes_by_fuzziness_types[fuzziness_type] = best_result
     else:
         iterations = 100
-        methods = ["crisp", "triangular_rank", "parabolic_rank"]
+        fuzziness_types = ["crisp", "triangular", "parabolic"]
         methods_results = dict()
         all_routes = dict()
-        for method in methods:
+        for fuzziness_type in fuzziness_types:
             routes = []
             for it in range(iterations):
                 if args.random_initial_route:
                     shuffle(shuffled_cities)
-                print(f"{method=}, it: {it + 1}/{iterations}")
-                routes.append(annealing(shuffled_cities, weights, method))
+                print(f"{fuzziness_type=}, it: {it + 1}/{iterations}")
+                routes.append(
+                    annealing(shuffled_cities, weights, fuzziness_type, "rank")
+                )
 
-            all_routes[method] = routes
+            all_routes[fuzziness_type] = routes
             best_result = min(
                 routes,
                 key=lambda r: estimate_average_route_distance(
-                    r, weights, get_approximation_type(method)
+                    r, weights, fuzziness_type
                 ),
             )
-            methods_results[method] = best_result
+            methods_results[fuzziness_type] = best_result
 
         with open(all_routes_filename, "w") as rf:
             json.dump(all_routes, rf, indent=4)
@@ -140,7 +144,7 @@ def main() -> None:
         with open(best_routes_filename, "w") as rf:
             json.dump(methods_results, rf, indent=4)
 
-        routes_by_methods = methods_results
+        routes_by_fuzziness_types = methods_results
 
     fig, axs = plt.subplots(2, 2)
     fig.canvas.manager.set_window_title("FTSP Solutions")
@@ -152,15 +156,15 @@ def main() -> None:
         ax.label_outer()
     colors = ["blue", "orange", "red"]
     plot_coords = [(0, 0), (0, 1), (1, 0)]
-    for idx, (method, route) in enumerate(routes_by_methods.items()):
+    for idx, (fuzziness_type, route) in enumerate(routes_by_fuzziness_types.items()):
         crisp_sampling = estimate_average_route_distance(
             route, weights, "crisp", args.evaluations
         )
         realistic_sampling = estimate_average_route_distance(
-            route, weights, "parabolic_approximation", args.evaluations
+            route, weights, "parabolic", args.evaluations
         )
 
-        print(f"For fuzzy type '{method}':")
+        print(f"For fuzziness type '{fuzziness_type}':")
         print(f"Naive objective function value = {crisp_sampling}")
         print(f"Realistic objective function value = {realistic_sampling}", end="\n\n")
 
@@ -179,7 +183,7 @@ def main() -> None:
         axs[plot_coords[idx][0], plot_coords[idx][1]].scatter(
             xs[-2], ys[-2], s=120, color="red"
         )
-        axs[plot_coords[idx][0], plot_coords[idx][1]].set_title(method)
+        axs[plot_coords[idx][0], plot_coords[idx][1]].set_title(fuzziness_type)
 
     if data.node_coords == {}:
         return

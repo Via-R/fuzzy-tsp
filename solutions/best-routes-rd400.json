@@ -401,7 +401,7 @@
         391,
         11
     ],
-    "triangular_rank": [
+    "triangular": [
         8,
         141,
         188,
@@ -803,7 +803,7 @@
         196,
         276
     ],
-    "parabolic_rank": [
+    "parabolic": [
         306,
         347,
         386,

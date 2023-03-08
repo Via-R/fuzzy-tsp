@@ -42,4 +42,4 @@ I advice you to read `help` on your first launch, there you will find a descript
 
 Example:
 
-    $ python main.py --evaluations=5000 --load-best-route --problem=pr76
+    $ python main.py --evaluations=10000 --load-best-route --problem=rd100

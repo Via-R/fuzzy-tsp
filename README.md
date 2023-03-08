@@ -1,6 +1,6 @@
-# Fuzzy TSP analyser ∙ ![Windows support](https://badgen.net/badge/icon/Windows?icon=windows&label) ![MacOS support](https://badgen.net/badge/icon/MacOS?icon=apple&label) ![Linux](https://badgen.net/badge/icon/Linux?icon=gnome&label)
+# <p align="center">Fuzzy TSP analyser ∙ ![Windows support](https://badgen.net/badge/icon/Windows?icon=windows&label) ![MacOS support](https://badgen.net/badge/icon/MacOS?icon=apple&label) ![Linux](https://badgen.net/badge/icon/Linux?icon=gnome&label)</p>
 
-![Solutions example](images/solution.png)
+<p align="center"><img src="images/solution.png" alt="Solutions example"/></p>
 
 This project is aimed at proving empirically that using fuzzy numbers as a way to measure conceptual distance between cities provides better results than its crisp counterpart (regular tsp), due to uncertainty in realistic conditions that impact aforementioned distance.
 

@@ -135,7 +135,9 @@ def _route_calculator(
 
     result = annealing(initial_route, weights, fuzziness_type, "rank")
 
-    print(f"{fuzziness_type=}, it: {it_idx + 1}/{iterations} | end {time() - start_ts:.4f}s")
+    print(
+        f"{fuzziness_type=}, it: {it_idx + 1}/{iterations} | end {time() - start_ts:.4f}s"
+    )
 
     return result
 

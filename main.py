@@ -11,7 +11,10 @@ from helpers import (
     load_weights,
     create_fuzzy_weights,
     print_results,
-    calculate_all_routes, Lambda, argmin, DEFAULT_PROCESS_AMOUNT,
+    calculate_all_routes,
+    Lambda,
+    argmin,
+    DEFAULT_PROCESS_AMOUNT,
 )
 from ftsp import estimate_average_route_distance
 
@@ -127,7 +130,9 @@ def main() -> None:
                 with Pool(args.threads or DEFAULT_PROCESS_AMOUNT) as p:
                     best_result_idx = argmin(
                         p.map(
-                            Lambda(estimate_average_route_distance, weights, fuzziness_type),
+                            Lambda(
+                                estimate_average_route_distance, weights, fuzziness_type
+                            ),
                             routes,
                         )
                     )

@@ -266,7 +266,7 @@ def approximate_fuzzy_number(
 
 def fuzzy_sum(a: FuzzyNumber, b: FuzzyNumber) -> FuzzyNumber:
     """Calculate a sum of two fuzzy numbers."""
-    
+
     return [a[0] + b[0], a[1] + b[1], a[2] + b[2]]
 
 

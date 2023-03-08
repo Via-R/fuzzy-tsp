@@ -200,7 +200,11 @@ def print_results(
     for ax in axs.flat:
         ax.label_outer()
     colors = ["blue", "orange", "red"]
-    plot_coords = [(0, 0), (0, 1), (1, 0)]
+    plot_coords = [(0, 1), (1, 0), (1, 1)]
+    all_cities_xs = [data.node_coords[i - city_shift][0] for i in data.get_nodes()]
+    all_cities_ys = [data.node_coords[i - city_shift][1] for i in data.get_nodes()]
+    axs[0, 0].set_title("cities")
+    axs[0, 0].scatter(all_cities_xs, all_cities_ys, color="grey")
     for idx, (fuzziness_type, route) in enumerate(routes_by_fuzziness_types.items()):
         crisp_sampling = estimate_average_route_distance(
             route, weights, "crisp", evaluations
